@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use clap::Parser;
 
 #[derive(Parser)]
@@ -10,6 +12,6 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    let pattern = std::env::args().nth(1).expect("missing pattern");
-    let path = std::env::args().nth(2).expect("missing path");
+    print!("{}", args.pattern);
+    print!("{:?}", args.path);
 }
