@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 use clap::Parser;
+use log::{info, warn};
 use std::fs::File;
 use std::io::{self, BufRead};
 
@@ -13,16 +14,31 @@ struct Cli {
 }
 
 fn main() -> io::Result<()> {
-    let args = Cli::parse();
+    env_logger::init();
+    info!("starting up");
 
-    let file = File::open(&args.path).expect("could not open file");
-    let reader = io::BufReader::new(file);
+    let args: Cli = Cli::parse();
 
-    for line in reader.lines() {
-        let line = line?;
-        if line.contains(&args.pattern) {
-            println!("{}", line);
+    let content = std::fs::read_to_string(&args.path).expect("could not read file");
+    //let content = std::fs::read_to_string(&args.path)
+    //.with_context(|| format!("could not read file `{}`", args.path.display()))?;
+
+    find_matches(&content, &args.pattern, &mut std::io::stdout());
+
+    Ok(())
+}
+
+fn find_matches(content: &str, pattern: &str, mut writer: impl std::io::Write) {
+    for line in content.lines() {
+        if line.contains(pattern) {
+            writeln!(writer, "{}", line);
         }
     }
-    Ok(())
+}
+
+#[test]
+fn find_a_match() {
+    let mut result = Vec::new();
+    find_matches("lorem ipsum\ndolor sit amet", "lorem", &mut result);
+    assert_eq!(result, b"lorem ipsum\n");
 }
